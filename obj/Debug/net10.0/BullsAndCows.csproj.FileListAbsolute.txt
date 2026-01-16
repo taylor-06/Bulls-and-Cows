@@ -1,0 +1,14 @@
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/bin/Debug/net10.0/BullsAndCows
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/bin/Debug/net10.0/BullsAndCows.deps.json
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/bin/Debug/net10.0/BullsAndCows.runtimeconfig.json
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/bin/Debug/net10.0/BullsAndCows.dll
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/bin/Debug/net10.0/BullsAndCows.pdb
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.GeneratedMSBuildEditorConfig.editorconfig
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.AssemblyInfoInputs.cache
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.AssemblyInfo.cs
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.csproj.CoreCompileInputs.cache
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.dll
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/refint/BullsAndCows.dll
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.pdb
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/BullsAndCows.genruntimeconfig.cache
+/Users/taylor/Desktop/uni work/First Year/1138 - Foundations of Programming/Assessments/Assessment 3/BullsAndCowsGame/BullsAndCows/obj/Debug/net10.0/ref/BullsAndCows.dll

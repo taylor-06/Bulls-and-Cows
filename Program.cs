@@ -1,0 +1,502 @@
+﻿// ------------------
+// Bulls and Cows Game Overview
+// Program generates a secret code that the user has to try and guess.
+// After each guess the program will respond with either "Bull" or "Cow"
+// "Bull" indicates a correct digit in the correct position.
+// "Cow" indicates a correct digit in the wrong position.
+// This doesnt tell the user which digit is correct however.
+// It just tells them how many "Bulls" and / or "Cows" they got.
+// ------------------
+// Basic Features (DONE)
+// (DONE)-A 4-digit secret code is generated when the program starts, with all
+// digits being unique in the code. 
+// (DONE)-The player has 10 turns to guess the code.
+// (DONE)-For each turn, the player must provide a 4-digit code. The program must
+// validate that the code the player entered is a 4-digit unqiue code. If
+// the code the player entered was invalid, this counts as a lost turn.
+// (DONE)-After every valid guess, the program will provide feedback by stating
+// the number of "Bulls" and "Cows".
+// (DONE)-The player should be able to give up at any time by entering a specific
+// command like "quit", which then reveals the secret code to the user.
+// (DONE)-If the player guesses the code correctly, they win. If they run out
+// of goes or give up, they lose. Either way, an appropiate win / loss
+// message should be provided.
+// ------------------
+// Desired Features
+// (DONE)-At the start of the game, the program should ask the user for a username.
+// (DONE)-The program should measure the time in seconds it takes for the user
+// to win the game.
+// (DONE)-Both the name and the time in seconds it takes to win should be saved 
+// to a "leaderboard.txt" file, and only be updated after a win.
+// (DONE)-Before the game starts, the user should have the option to view the
+// contents of the leaderboard, sorted by the fastest time.
+// (DONE)-After each guess by the player, in addition to the "Bull" and "Cow" feedback,
+// the program should also display all the numbers the user has guessed already
+// which are not in the secret code.
+// (DONE)-For each turn, the player has 45 seconds to make a guess. If they dont make
+// a guess in that time, they lose that turn and the game proceeds to the next turn.
+// ------------------
+// Advanced Features
+// (DONE (partially))-The player should be able to select the desired difficulty at the beggining
+// of the game, including code length (4, 5, or 6 digits), or a hard mode
+// which the secret code can include repeating digits. (NOT DOING THE NON UNIQUE DIGITS)
+// -The player has the option to use a hint, once per game. This hint will
+// reveal one correct digit from the secret code, but not its position. Using
+// a hint will cost one turn.
+// -The player can ask for a "Logic Check", which will list all the possible
+// numbers that are still valid solutions based on the feedback from
+// previous guesses.
+
+// (Allowed usings).
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+namespace BullsAndCows
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Stopwatch timer = new Stopwatch(); // Timer for the entire game, with the value saved to "leaderboard.txt" if the user wins the game.
+            Stopwatch turnTimer = new Stopwatch(); // Timer for each turn within the game.
+            int timeElapsed = 0;
+
+            bool keepRunning = false; // Bool to determine whether the game should continue running or not.
+            bool usedHint = false; // Bool to determine whether the user has used their one hint for the game or not.
+
+            int turn = 1; // Turn counter.
+
+            // List of the incorrect numbers the user has tried.
+            // Has to be a list since it needs to dynamically change.
+            List<int> incorrectNumbers = new List<int>(); 
+
+            string userName = "null"; // Variable for the usernamae
+            string leaderboardInput = "null"; // Variable for determining if the user wanted to view the leaderboard.
+
+            Console.WriteLine("--- Bulls and Cows ---");
+
+            int desiredCodeLength = 0; // Variable for the user's desired secret code length.
+            Console.WriteLine("How many digits would you like the secret code to be? (4 / 5 / 6).");
+            try
+            {
+                desiredCodeLength = Convert.ToInt32(Console.ReadLine()!); // The user chooses how many digits they want the code to be.
+
+                while (desiredCodeLength != 4 && desiredCodeLength != 5 && desiredCodeLength != 6) // This code will loop until either 4, 5, or 6 is chosen.
+                {
+                    Console.WriteLine("Code length options are either 4, 5 or 6. Please choose one of them.");
+                    try
+                    {
+                        desiredCodeLength = Convert.ToInt32(Console.ReadLine()!);
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Invalid input. Defaulting to 4 digits."); // If the user doesnt enter a number, the default option, being 4, is chosen.
+                        desiredCodeLength = 4;
+                    }
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid input. Defaulting to 4 digits."); // If the user doesnt enter a number, the default option, being 4, is chosen.
+                desiredCodeLength = 4;
+            }
+
+            Console.WriteLine($"\nYou have 10 chances to guess the secret code. Each guess must be {desiredCodeLength} unique digits.");
+            Console.WriteLine("Any Bulls you get is a digit in the correct place, any Cows you get is a correct digit in the wrong place.");
+            Console.WriteLine("You get one hint per game, which tells you a correct digit in the secret code, but not where it is located. Type 'Hint' to use up your hint.");
+            Console.WriteLine("You have 45 seconds for each guess. Type 'Quit' to end the game early.");
+            Console.WriteLine("Generating a secret code... Code generated.");
+
+            Console.WriteLine("\nWould you like to view the leaderboard before you begin? (Y/N)");
+            leaderboardInput = Console.ReadLine()!;
+
+            // Gives the user the option to see everyone on the leaderboard.
+            if (leaderboardInput.ToUpper() == "Y")
+            {
+                Console.WriteLine("--- Leaderboard --- ");
+                LoadData(keepRunning);
+            }
+
+            Console.WriteLine("\nEnter a username: ");
+            userName = Console.ReadLine()!; // Prompts the user to enter a username, which can be later stored in the "leaderboard.txt" file.
+            keepRunning = true;
+
+            timer.Start(); // Entire game timer starts.
+
+            // An array of digits is generated by the code generator.
+            // An array is used here so that the length of the code cannot change once decided.
+            int[] secretCodeDigits = CodeGenerator(desiredCodeLength);
+
+            // Code snippet adapted from Stack Overflow (2026)
+            // URL: https://stackoverflow.com/questions/13426463/convert-an-array-to-string
+            // Converts the array of digits from the secret code to a string so that it can be easily displayed to the user.
+            string secretCodeString = string.Join("", secretCodeDigits);
+            
+            while (keepRunning)
+            {
+                // Turn timer starting. 
+                // Using turnTimer.Start() here and turnTimer.Stop() at the end of the turn
+                // would make it so the timer never resets to 0 at the beginning of each turn.
+                turnTimer.Restart(); 
+                string input = "null";
+
+                if (turn > 10) // Prevents the user from being able to have more than 10 turns within the game.
+                {
+                    keepRunning = false;
+                    Console.WriteLine($"\nYou have ran out of turns and therefore lost the game. The code was: {secretCodeString}"); // Displays what the secret code was to the user.
+                    timer.Stop();
+                    timeElapsed = Convert.ToInt32(timer.Elapsed.TotalSeconds); 
+                    Console.WriteLine($"Time taken: {timeElapsed} seconds"); // Displays how long it took them to reach this point within the game.
+                    Console.WriteLine("Press any key to continue..."); // Prompts the user to press a key.
+                    Console.ReadKey(); // Game doesnt close until a user presses a key.
+                    break;
+                }
+
+                Console.WriteLine($"\nTurn: {turn}");
+                Console.WriteLine($"Enter a {desiredCodeLength} digit unqiue code: ");
+                try
+                {
+                    turn++;
+
+                    try
+                    {
+                        while (turnTimer.Elapsed.TotalSeconds <= 45) // Loops until 45 seconds have passed within the current turn.
+                        {
+                            // Creates the ability to run a loop until a key is pressed.
+                            // (Console.ReadLine() blocks the ability to do this).
+                            // Code snippet adapted from Microsoft (2026)
+                            // URL: https://learn.microsoft.com/en-us/dotnet/api/system.console.keyavailable?view=net-10.0
+                            if (Console.KeyAvailable)
+                            {
+                                input = Console.ReadLine()!;
+                                break;
+                            }
+                        }
+                    }
+                    catch(IOException inputOutputEX)
+                    {
+                        Console.WriteLine(inputOutputEX.Message);
+                    }
+                    catch (InvalidOperationException invalidOperationEX)
+                    {
+                        Console.WriteLine(invalidOperationEX.Message);
+                    }
+
+                    // If the user doesnt enter anything within the provided time frame,
+                    // they lose their turn and get provided with this message.
+                    if (input == "null")
+                    {
+                        Console.WriteLine("You have ran out of time for this turn.");
+                        continue;
+                    }
+                    
+                    // Logic to be able to quit the game at any point.
+                    if (input.ToUpper() == "QUIT") // Converts to all upper case characters to avoid case sensitive issues.
+                    {
+                        Console.WriteLine("\nQuitting the game...");
+                        Console.WriteLine($"You have quit the game. The secret code was {secretCodeString}."); // Displays what the secret code was to the user.
+                        timer.Stop(); // Stops the entire game timer.
+                        timeElapsed = Convert.ToInt32(timer.Elapsed.TotalSeconds); 
+                        Console.WriteLine($"Time taken: {timeElapsed} seconds"); // Displays how long it took them to reach this point within the game.
+                        keepRunning = false;
+                        Console.WriteLine("Press any key to continue..."); // Prompts the user to press a key.
+                        Console.ReadKey(); // Game doesnt close until a user presses a key.
+                        break;
+                    }
+                    // Logic to be able to use one hint at any point within the game.
+                    else if (input.ToUpper() == "HINT") // Converts to all upper case characters to avoid case sensitive issues.
+                    {
+                        HintRequest(secretCodeDigits, usedHint);
+                        usedHint = true; // Sets the "usedHint" variable to true so that another hint cannot be used in the game.
+                        continue; // Skips to the next turn.
+                    }
+                    else
+                    {        
+                        // Logic to ensure the input is valid.
+                        if (!IsValidInput(input, desiredCodeLength))
+                            continue; // If the input wasnt valid, the rest of this if-else loop is skipped, displaying an error message and moving onto the next turn.
+
+                        // Code snippet adapted from Stack Overflow (2026)
+                        // URL: https://stackoverflow.com/questions/53640660/split-string-of-numbers-into-digits-and-send-to-array
+                        // Converts the user's input string of digits to an array of digits.
+                        int[] inputCodeDigits = input.Select(x => x - 48).ToArray();
+                        
+                        var calcBullsAndCows = CalcBullsAndCows(inputCodeDigits, secretCodeDigits); // Calculates and displays the number of Bulls and Cows Present.
+                        IncorrectNumberCalc(inputCodeDigits, calcBullsAndCows.isBull, calcBullsAndCows.isCow, incorrectNumbers); // Calculates and displays the incorrect numbers used.
+                    }
+                }   
+                // Ensures that if the user enters an input thats in the incorrect format, 
+                // the error is caught and doesnt crash the program.
+                catch (FormatException formatEX) 
+                {
+                    Console.WriteLine(formatEX.Message);
+                }
+
+                // Logic if the user guesses the secret code correctly.
+                if (input == secretCodeString)
+                {
+                    Console.WriteLine($"\nYou have guessed the code correctly! It was {secretCodeString}"); // Displays what the secret code was to the user.
+                    timeElapsed = Convert.ToInt32(timer.Elapsed.TotalSeconds);
+                    timer.Stop(); // Stops the entire games timer to be saved to "leaderboard.txt".
+                    turnTimer.Stop(); // Stops the game's turn timer so that it doesnt accidently skip another turn.
+                    Console.WriteLine($"Time taken to guess the code corectly: {timeElapsed} seconds"); // Displays how long it took them to reach this point within the game.
+                    SaveData(userName, timeElapsed); // Saves both the username the user entered and how long it tookm them to correctly guess the secret code.
+                    keepRunning = false;
+                    Console.WriteLine("Press any key to continue..."); // Prompts the user to press a key.
+                    Console.ReadKey(); // Game doesnt close until a user presses a key.
+                }
+                // Logic if the user guess the code incorrectly.
+                else if (input != secretCodeString)
+                {                        
+                    Console.WriteLine($"\n{input} was incorrect. Try again!"); // If what the user's guess was incorrect, the user's guess is displayed telling them so.
+                    turnTimer.Stop(); // Stops the game's turn timer so that it doesnt accidently skip another turn.
+                }
+            }
+        }
+
+        static void SaveData(string userName, int timeElapsed)
+        {
+            Player player = new Player(userName, timeElapsed); // Creates a new player object to store the username and the time elapsed during the game.
+
+            using (StreamWriter writer = new StreamWriter("leaderboard.txt", true)) // Checks to see if "leaderboard.txt" exists, if so it opens the file.
+            {
+                writer.WriteLine(player.userName + "," + player.timeElapsed); // Writes the players name and time elapsed values to the file.
+            } // Writing to a file utilsing the word "using" automatically opens and closes the file, if the file exists.
+        }
+
+        static void LoadData(bool gameRunning)
+        {
+            // Ensures the game is in a state where the leaderboard can be viewed.
+            if (gameRunning)
+            {
+                Console.WriteLine("You cannot view the leaderboard while the game in running.");
+                return;
+            }
+            // Ensures that "leaderboard.txt" exists before trying to access it.
+            else if (File.Exists("leaderboard.txt"))
+            {
+                try
+                {
+                    bool isEmpty = true;
+
+                    // This code snippet takes each line in "leaderboard.txt", if there is any,
+                    // and splits it into the name and the number into an array, each being different values of the array.
+                    // The timeElapsed value of the array is converted to an int from a string and adds it 
+                    // to a dictionary, where it is then sorted and printed with the correct name in ascending order.
+                    // Code snippet adapted from Stack Overflow (2026)
+                    // URL: https://stackoverflow.com/questions/56254843/how-would-i-go-about-sorting-a-text-file-that-contains-names-and-scores-in-numer
+                    string[] lines = File.ReadAllLines("leaderboard.txt");
+                    var dictionary = new Dictionary<int, List<string>>();
+
+                    try
+                    {
+                        foreach (var line in lines)
+                        {
+                            isEmpty = false;
+                            string[] vals = line.Split(","); // Splits the username and time elapsed values saved to "leadeboard.txt" up and puts them into an array.
+
+                            var name = vals[0].Trim(); // Creates a variable for the username and removes any extra spaces in the beginning and / or the end of the string.
+                            var timeElapsed = Convert.ToInt32(vals[1].Trim()); // Creates a variable for the time elapsed  and removes any extra spaces in the beginning and / or the end of the string.
+                            
+
+                            if (!dictionary.ContainsKey(Convert.ToInt32(vals[1].Trim()))) // Checks to see if the dictionary already contains the time scored.
+                            {
+                                dictionary.Add(timeElapsed, new List<string> {name}); // If it doesnt, it adds the time elapsed to the dictionary, with the username as well.
+                            }
+                            else
+                            {
+                                // If it does already contain the time elapsed, it adds the username to that value.
+                                // This allows for multiple usernames to have the same time elapsed score.
+                                var duplicate = dictionary.GetValueOrDefault(timeElapsed); 
+                                duplicate.Add(name);
+                            }
+                        }
+
+                        var orderedList = dictionary.OrderBy(r => r.Key); // Reorders the time elapsed values to be in acsending order.
+
+                        foreach (var entry in orderedList)
+                        {
+                            foreach (var name in entry.Value)
+                            {
+                                Console.WriteLine($"{name} - {entry.Key} seconds"); // Displays the username and their score.
+                            }
+                        }
+
+                        // If the leaderboard is empty, instead of displaying nothing,
+                        // it displays this message instead.
+                        if (isEmpty)
+                        {
+                            Console.WriteLine("Currently no one is on the leaderboard. Be the first!");
+                        }
+                    }
+                    catch(IndexOutOfRangeException indexOutOFRangeEX)
+                    {
+                        Console.WriteLine(indexOutOFRangeEX.Message);
+                    }
+                    catch (FormatException formatEX)
+                    {
+                        Console.WriteLine(formatEX.Message);
+                    }
+                }
+                catch (FileNotFoundException fileNotFoundEX)
+                {
+                    Console.WriteLine(fileNotFoundEX.Message);
+                }
+                catch (UnauthorizedAccessException unauthorizedEX)
+                {
+                    Console.WriteLine(unauthorizedEX.Message);
+                }
+                catch (IOException inputOutputEx)
+                {
+                    Console.WriteLine(inputOutputEx.Message);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Error. File not found");
+            }
+        }
+
+        static bool IsValidInput(string userInput, int desiredCodeLength)
+        {
+            try
+            {
+                int userInputInt = Convert.ToInt32(userInput); // Checks if the input was a number.
+            }
+            catch (FormatException formatEX)
+            {
+                Console.WriteLine(formatEX.Message);
+                return false;
+            }
+
+            if (userInput.Length != desiredCodeLength) // Checks if the input was the correct desired length.
+            {
+                Console.WriteLine($"The guess was not {desiredCodeLength} digits");
+                return false;
+            }   
+
+            // These loops check to ensure that all of the digits were unqiue.
+            for (int i = 0; i < userInput.Length; i++) // This loops gets the current digit.
+            {
+                for (int j = i + 1; j < userInput.Length; j++) // This loop gets all the digits after the current digit.
+                {       
+                    if (userInput[i] == userInput[j]) // Compares the two digits gathered from the two loops.
+                    {
+                        Console.WriteLine("Not all digits were unique.");
+                        return false;
+                    }
+                }
+            }
+
+            return true; // If the user's input passes all of these checks, it is a valild input and returns true.
+        }
+
+        static int[] CodeGenerator(int desiredCodeLength)
+        {
+            Random randomNumber = new Random();
+            // Creates a list to store the digits of the secret code in.
+            // Specifically a list is created since it isnt known at the beginning of the
+            // program how many digits are required to be genereated until the user decides either 4, 5 or 6.
+            List<int> secretCodeDigits = new List<int>();
+
+            while (secretCodeDigits.Count < desiredCodeLength) // Doesnt stop looping until the number of digits in the list equals the desired length.
+            {
+                // Code snippet adapted from Microsoft (2026)
+                // URL: https://learn.microsoft.com/en-us/dotnet/api/system.random.next?view=net-10.0
+                int digit = randomNumber.Next(0, 10); // Generates a number between 0 and 10. 
+
+                if (!secretCodeDigits.Contains(digit)) // Ensures that the secret code doesnt already contain the generated digit.
+                {
+                    secretCodeDigits.Add(digit);
+                }
+            }
+
+            return secretCodeDigits.ToArray(); // Returning as an array so that the value is no longer dynamic and the length of the secret code cannot change anymore.
+        }
+
+        static void IncorrectNumberCalc(int[] userInputDigits, bool[] isBull, bool[] isCow, List<int> incorrectNumbers)
+        {
+            for (int i = 0; i < userInputDigits.Length; i++) // This loops gets the current digit.
+            {   
+                if (!isBull[i] && !isCow[i]) // Checks to see if the current digit was either a bull or a cow.
+                {
+                    if (incorrectNumbers.Contains(userInputDigits[i])) // If the incorrect number already exists in the list, the rest of the code is skipped.
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        incorrectNumbers.Add(userInputDigits[i]); // If it wasnt then the current digit is added to the incorrect numbers list.
+                    }
+                }
+            }
+
+            // Displays all the incorrect numbers guessed to the user.
+            Console.Write($"Numbers guessed not in the secret code: ");
+            for (int i = 0; i < incorrectNumbers.Count; i++)
+            {
+                Console.Write($"{incorrectNumbers[i]}, ");
+            }
+        }
+
+        static (int bulls, int cows, bool[] isBull, bool[] isCow) CalcBullsAndCows(int[] userInputDigits, int[] secretCodeDigits)
+        {
+            int bulls = 0; // Variable for the number of Bulls.
+            int cows = 0; // Variable for the number of Cows.
+
+            bool[] isBull = new bool[secretCodeDigits.Length]; // An array of bools that determines if a digit is a Bull.
+            bool[] isCow = new bool[secretCodeDigits.Length]; // An array of bools that determines if a digit is a Cow.
+
+            for (int i = 0; i < userInputDigits.Length; i++) // This loops gets the current digit.
+            {   
+                if (userInputDigits[i] == secretCodeDigits[i]) // If the current digit of the user's input is equal to the current digit of the secret code, it is a Bull.
+                {
+                    isBull[i] = true; // Sets the current index value of the Bulls array to true.
+                    isCow[i] = false; // Ensures that the current index value of the Cows array is false.
+                    bulls++; // Adds 1 to the Bulls counter.
+                }
+
+                if (isBull[i]) // If the current digit was a Bull, it skips the rest of this code.
+                {
+                    continue;
+                }
+                else if (secretCodeDigits.Contains(userInputDigits[i])) // If it wasnt a bull, but is somewhere else in the code, it is a Cow.
+                {
+                    isBull[i] = false; // Ensures that the current index value of the Bulls array is false.
+                    isCow[i] = true; // Sets the current index value of the Cows array to true.
+                    cows++; // Adds 1 to the Cows counter.
+                }
+                else
+                {
+                    // If the current digit is neither a Bull or Cow, it is ensured both current 
+                    // index values in the two arrays are set to false.
+                    isBull[i] = false;
+                    isCow[i] = false;
+                }
+            }
+
+            Console.WriteLine($"\nBulls: {bulls}, Cows: {cows}"); // Displays to the user the number of Bulls and Cows from their guess.
+            return (bulls, cows, isBull, isCow);
+        }
+
+        static void HintRequest(int[] secretCodeDigits, bool usedHint)
+        {
+            // If the player has already used their hint for the game,
+            // they are displayed with this message and cannot use another hint.
+            if (usedHint) 
+            {
+                Console.WriteLine("You have already used the hint for this game.");
+                return;
+            }
+            else
+            {
+                Random randomNumber = new Random();
+                int randomDigitIndex = randomNumber.Next(0, secretCodeDigits.Length); // Generates a number that is between 0 and the length of the code, creating a random index value.
+
+                Console.WriteLine($"Hint: {secretCodeDigits[randomDigitIndex]} is a digit in the secret code."); // A random digit is then displayed to the user using the random index generated before.
+            }
+        }
+    }
+}

@@ -40,7 +40,7 @@
 // (DONE (partially))-The player should be able to select the desired difficulty at the beggining
 // of the game, including code length (4, 5, or 6 digits), or a hard mode
 // which the secret code can include repeating digits. (NOT DOING THE NON UNIQUE DIGITS)
-// -The player has the option to use a hint, once per game. This hint will
+// (DONE)-The player has the option to use a hint, once per game. This hint will
 // reveal one correct digit from the secret code, but not its position. Using
 // a hint will cost one turn.
 // -The player can ask for a "Logic Check", which will list all the possible
@@ -256,6 +256,11 @@ namespace BullsAndCows
             }
         }
 
+        /// <summary>
+        /// Saves the player's username and the time taken to win the game to "leaderboard.txt".
+        /// </summary>
+        /// <param name="userName">The player's username.</param>
+        /// <param name="timeElapsed">The time taken to win the game.</param>
         static void SaveData(string userName, int timeElapsed)
         {
             Player player = new Player(userName, timeElapsed); // Creates a new player object to store the username and the time elapsed during the game.
@@ -266,6 +271,10 @@ namespace BullsAndCows
             } // Writing to a file utilsing the word "using" automatically opens and closes the file, if the file exists.
         }
 
+        /// <summary>
+        /// Loads the data from "leaderboard.txt", displaying saved usernames and times.
+        /// </summary>
+        /// <param name="gameRunning">A bool to indicate if the game is currently running.</param>
         static void LoadData(bool gameRunning)
         {
             // Ensures the game is in a state where the leaderboard can be viewed.
@@ -359,6 +368,12 @@ namespace BullsAndCows
             }
         }
 
+        /// <summary>
+        /// Checks to see if the user's guess is valid in terms of format, code length, and digit uniqueness.
+        /// </summary>
+        /// <param name="userInput">The user's secret code guess.</param>
+        /// <param name="desiredCodeLength">The length the user wants the secret code to be.</param>
+        /// <returns>True if the input was valid, false if not.</returns>
         static bool IsValidInput(string userInput, int desiredCodeLength)
         {
             try
@@ -393,6 +408,11 @@ namespace BullsAndCows
             return true; // If the user's input passes all of these checks, it is a valild input and returns true.
         }
 
+        /// <summary>
+        /// Generates the secret code for the user to guess.
+        /// </summary>
+        /// <param name="desiredCodeLength">The length the user wants the secret code to be.</param>
+        /// <returns>The secret code converted into an array.</returns>
         static int[] CodeGenerator(int desiredCodeLength)
         {
             Random randomNumber = new Random();
@@ -416,6 +436,13 @@ namespace BullsAndCows
             return secretCodeDigits.ToArray(); // Returning as an array so that the value is no longer dynamic and the length of the secret code cannot change anymore.
         }
 
+        /// <summary>
+        /// Calculates the numbers which are not in the secret code that the user has tried guessing.
+        /// </summary>
+        /// <param name="userInputDigits">An array of the digits the user entered for their guess.</param>
+        /// <param name="isBull">An array of bools determining if the user's guess had any Bulls in it.</param>
+        /// <param name="isCow">An array of bools determining if the user's guess had any Cows in it.</param>
+        /// <param name="incorrectNumbers">A list of the incorrect numbers already guessed.</param>
         static void IncorrectNumberCalc(int[] userInputDigits, bool[] isBull, bool[] isCow, List<int> incorrectNumbers)
         {
             for (int i = 0; i < userInputDigits.Length; i++) // This loops gets the current digit.
@@ -441,6 +468,12 @@ namespace BullsAndCows
             }
         }
 
+        /// <summary>
+        /// Calculates the number of Bulls and Cows in the user's current guess.
+        /// </summary>
+        /// <param name="userInputDigits">An array of the digits the user entered for their guess.</param>
+        /// <param name="secretCodeDigits">An array of the digits in the secret code.</param>
+        /// <returns>The number of Bulls and Cows and an array of bools of the Bulls and Cows positions inside the guess.</returns>
         static (int bulls, int cows, bool[] isBull, bool[] isCow) CalcBullsAndCows(int[] userInputDigits, int[] secretCodeDigits)
         {
             int bulls = 0; // Variable for the number of Bulls.
@@ -481,6 +514,11 @@ namespace BullsAndCows
             return (bulls, cows, isBull, isCow);
         }
 
+        /// <summary>
+        /// Reveals to the user one random digit present in the secret code.
+        /// </summary>
+        /// <param name="secretCodeDigits">An array of the digits in the secret code.</param>
+        /// <param name="usedHint">A bool determining if the user has already used their one hint for the current game.</param>
         static void HintRequest(int[] secretCodeDigits, bool usedHint)
         {
             // If the player has already used their hint for the game,

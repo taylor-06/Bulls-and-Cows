@@ -454,7 +454,7 @@ namespace BullsAndCows
 
                 if (isBull[i]) // If the current digit was a Bull, it skips the rest of this code.
                 {
-                    continue;
+                    continue; // Skips to the next digit if the digit was a Bull.
                 }
                 else if (secretCodeDigits.Contains(userInputDigits[i])) // If it wasnt a bull, but is somewhere else in the code, it is a Cow.
                 {

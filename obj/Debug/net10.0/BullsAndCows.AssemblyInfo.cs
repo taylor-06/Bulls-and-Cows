@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BullsAndCows")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+786289fe850341438a2e7739d8af517ec23bdc0f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+adcacc7bfa2985faf6edd8b86905af34cc65f804")]
 [assembly: System.Reflection.AssemblyProductAttribute("BullsAndCows")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BullsAndCows")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

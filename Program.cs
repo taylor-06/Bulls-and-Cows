@@ -344,13 +344,18 @@ namespace BullsAndCows
             catch (FormatException formatEX)
             {
                 Console.WriteLine(formatEX.Message);
-                return false; // If the input wasnt a number, method returns false as it was not a valid input.
+                return false; // If the input wasnt a number, the method returns false as it was not a valid input.
+            }
+            catch (OverflowException overflowEX)
+            {
+                Console.WriteLine(overflowEX.Message);
+                return false; // If the input was either too big or too small for an Int32, the method returns false as it was not a valid input.
             }
 
             if (userInput.Length != desiredCodeLength) // Checks if the input was the correct desired length.
             {
                 Console.WriteLine($"The guess was not {desiredCodeLength} digits");
-                return false; // If the input was not the same length as the secret code, method returns false as it was not a valid input.
+                return false; // If the input was not the same length as the secret code, the method returns false as it was not a valid input.
             }   
 
             // These loops check to ensure that all of the digits were unqiue.
@@ -361,7 +366,7 @@ namespace BullsAndCows
                     if (userInput[i] == userInput[j]) // Compares the two digits gathered from the two loops.
                     {
                         Console.WriteLine("Not all digits were unique.");
-                        return false; // If the digits werent all unique, method returns false as it was not a valid input.
+                        return false; // If the digits werent all unique, the method returns false as it was not a valid input.
                     }
                 }
             }

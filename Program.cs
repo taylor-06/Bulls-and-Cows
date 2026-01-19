@@ -1,54 +1,4 @@
-﻿// ------------------
-// Bulls and Cows Game Overview
-// Program generates a secret code that the user has to try and guess.
-// After each guess the program will respond with either "Bull" or "Cow"
-// "Bull" indicates a correct digit in the correct position.
-// "Cow" indicates a correct digit in the wrong position.
-// This doesnt tell the user which digit is correct however.
-// It just tells them how many "Bulls" and / or "Cows" they got.
-// ------------------
-// Basic Features (DONE)
-// (DONE)-A 4-digit secret code is generated when the program starts, with all
-// digits being unique in the code. 
-// (DONE)-The player has 10 turns to guess the code.
-// (DONE)-For each turn, the player must provide a 4-digit code. The program must
-// validate that the code the player entered is a 4-digit unqiue code. If
-// the code the player entered was invalid, this counts as a lost turn.
-// (DONE)-After every valid guess, the program will provide feedback by stating
-// the number of "Bulls" and "Cows".
-// (DONE)-The player should be able to give up at any time by entering a specific
-// command like "quit", which then reveals the secret code to the user.
-// (DONE)-If the player guesses the code correctly, they win. If they run out
-// of goes or give up, they lose. Either way, an appropiate win / loss
-// message should be provided.
-// ------------------
-// Desired Features
-// (DONE)-At the start of the game, the program should ask the user for a username.
-// (DONE)-The program should measure the time in seconds it takes for the user
-// to win the game.
-// (DONE)-Both the name and the time in seconds it takes to win should be saved 
-// to a "leaderboard.txt" file, and only be updated after a win.
-// (DONE)-Before the game starts, the user should have the option to view the
-// contents of the leaderboard, sorted by the fastest time.
-// (DONE)-After each guess by the player, in addition to the "Bull" and "Cow" feedback,
-// the program should also display all the numbers the user has guessed already
-// which are not in the secret code.
-// (DONE)-For each turn, the player has 45 seconds to make a guess. If they dont make
-// a guess in that time, they lose that turn and the game proceeds to the next turn.
-// ------------------
-// Advanced Features
-// (DONE (partially))-The player should be able to select the desired difficulty at the beggining
-// of the game, including code length (4, 5, or 6 digits), or a hard mode
-// which the secret code can include repeating digits. (NOT DOING THE NON UNIQUE DIGITS)
-// (DONE)-The player has the option to use a hint, once per game. This hint will
-// reveal one correct digit from the secret code, but not its position. Using
-// a hint will cost one turn.
-// -The player can ask for a "Logic Check", which will list all the possible
-// numbers that are still valid solutions based on the feedback from
-// previous guesses.
-
-// (Allowed usings).
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -90,14 +40,14 @@ namespace BullsAndCows
                     {
                         desiredCodeLength = Convert.ToInt32(Console.ReadLine()!);
                     }
-                    catch (FormatException)
+                    catch (FormatException) // Catches a format exception if the user doesnt enter an integer.
                     {
                         Console.WriteLine("Invalid input. Defaulting to 4 digits."); // If the user doesnt enter a number, the default option, being 4, is chosen.
                         desiredCodeLength = 4;
                     }
                 }
             }
-            catch (FormatException)
+            catch (FormatException) // Catches a format exception if the user doesnt enter an integer.
             {
                 Console.WriteLine("Invalid input. Defaulting to 4 digits."); // If the user doesnt enter a number, the default option, being 4, is chosen.
                 desiredCodeLength = 4;
@@ -110,7 +60,7 @@ namespace BullsAndCows
             Console.WriteLine("Generating a secret code... Code generated.");
 
             Console.WriteLine("\nWould you like to view the leaderboard before you begin? (Y/N)");
-            leaderboardInput = Console.ReadLine()!;
+            leaderboardInput = Console.ReadLine()!; 
 
             // Gives the user the option to see everyone on the leaderboard.
             if (leaderboardInput.ToUpper() == "Y")
@@ -121,6 +71,15 @@ namespace BullsAndCows
 
             Console.WriteLine("\nEnter a username: ");
             userName = Console.ReadLine()!; // Prompts the user to enter a username, which can be later stored in the "leaderboard.txt" file.
+
+            // If the user doesnt enter anything for the username, they will continue
+            // being prompted to enter a username until they do.
+            while (String.IsNullOrEmpty(userName))
+            {
+                Console.WriteLine("Please enter a username: ");
+                userName = Console.ReadLine()!;
+            }
+
             keepRunning = true;
 
             timer.Start(); // Entire game timer starts.
@@ -144,9 +103,9 @@ namespace BullsAndCows
 
                 if (turn > 10) // Prevents the user from being able to have more than 10 turns within the game.
                 {
-                    keepRunning = false;
+                    keepRunning = false; // Ends the while loop.
                     Console.WriteLine($"\nYou have ran out of turns and therefore lost the game. The code was: {secretCodeString}"); // Displays what the secret code was to the user.
-                    timer.Stop();
+                    timer.Stop(); // Stops the entire game timer.
                     timeElapsed = Convert.ToInt32(timer.Elapsed.TotalSeconds); 
                     Console.WriteLine($"Time taken: {timeElapsed} seconds"); // Displays how long it took them to reach this point within the game.
                     Console.WriteLine("Press any key to continue..."); // Prompts the user to press a key.
@@ -158,7 +117,7 @@ namespace BullsAndCows
                 Console.WriteLine($"Enter a {desiredCodeLength} digit unqiue code: ");
                 try
                 {
-                    turn++;
+                    turn++; // Increases the turn counter.
 
                     try
                     {
@@ -200,7 +159,7 @@ namespace BullsAndCows
                         timer.Stop(); // Stops the entire game timer.
                         timeElapsed = Convert.ToInt32(timer.Elapsed.TotalSeconds); 
                         Console.WriteLine($"Time taken: {timeElapsed} seconds"); // Displays how long it took them to reach this point within the game.
-                        keepRunning = false;
+                        keepRunning = false; // Ends the while loop.
                         Console.WriteLine("Press any key to continue..."); // Prompts the user to press a key.
                         Console.ReadKey(); // Game doesnt close until a user presses a key.
                         break;
@@ -265,10 +224,11 @@ namespace BullsAndCows
         {
             Player player = new Player(userName, timeElapsed); // Creates a new player object to store the username and the time elapsed during the game.
 
+             // Writing to a file utilsing the word "using" automatically opens and closes the file, if the file exists.
             using (StreamWriter writer = new StreamWriter("leaderboard.txt", true)) // Checks to see if "leaderboard.txt" exists, if so it opens the file.
             {
                 writer.WriteLine(player.userName + "," + player.timeElapsed); // Writes the players name and time elapsed values to the file.
-            } // Writing to a file utilsing the word "using" automatically opens and closes the file, if the file exists.
+            }
         }
 
         /// <summary>
@@ -280,9 +240,10 @@ namespace BullsAndCows
             // Ensures the game is in a state where the leaderboard can be viewed.
             if (gameRunning)
             {
-                Console.WriteLine("You cannot view the leaderboard while the game in running.");
+                Console.WriteLine("You cannot view the leaderboard while the game is running.");
                 return;
             }
+
             // Ensures that "leaderboard.txt" exists before trying to access it.
             else if (File.Exists("leaderboard.txt"))
             {
@@ -291,7 +252,7 @@ namespace BullsAndCows
                     bool isEmpty = true;
 
                     // This code snippet takes each line in "leaderboard.txt", if there is any,
-                    // and splits it into the name and the number into an array, each being different values of the array.
+                    // and split the name and the time taken into an array, each being different values of the array.
                     // The timeElapsed value of the array is converted to an int from a string and adds it 
                     // to a dictionary, where it is then sorted and printed with the correct name in ascending order.
                     // Code snippet adapted from Stack Overflow (2026)
@@ -304,7 +265,7 @@ namespace BullsAndCows
                         foreach (var line in lines)
                         {
                             isEmpty = false;
-                            string[] vals = line.Split(","); // Splits the username and time elapsed values saved to "leadeboard.txt" up and puts them into an array.
+                            string[] vals = line.Split(","); // Splits the username and time elapsed values saved to "leaderboard.txt" up and puts them into an array.
 
                             var name = vals[0].Trim(); // Creates a variable for the username and removes any extra spaces in the beginning and / or the end of the string.
                             var timeElapsed = Convert.ToInt32(vals[1].Trim()); // Creates a variable for the time elapsed  and removes any extra spaces in the beginning and / or the end of the string.
@@ -383,13 +344,13 @@ namespace BullsAndCows
             catch (FormatException formatEX)
             {
                 Console.WriteLine(formatEX.Message);
-                return false;
+                return false; // If the input wasnt a number, method returns false as it was not a valid input.
             }
 
             if (userInput.Length != desiredCodeLength) // Checks if the input was the correct desired length.
             {
                 Console.WriteLine($"The guess was not {desiredCodeLength} digits");
-                return false;
+                return false; // If the input was not the same length as the secret code, method returns false as it was not a valid input.
             }   
 
             // These loops check to ensure that all of the digits were unqiue.
@@ -400,7 +361,7 @@ namespace BullsAndCows
                     if (userInput[i] == userInput[j]) // Compares the two digits gathered from the two loops.
                     {
                         Console.WriteLine("Not all digits were unique.");
-                        return false;
+                        return false; // If the digits werent all unique, method returns false as it was not a valid input.
                     }
                 }
             }
@@ -429,7 +390,7 @@ namespace BullsAndCows
 
                 if (!secretCodeDigits.Contains(digit)) // Ensures that the secret code doesnt already contain the generated digit.
                 {
-                    secretCodeDigits.Add(digit);
+                    secretCodeDigits.Add(digit); // If the digit didnt already exist in the array, it is then added.
                 }
             }
 
